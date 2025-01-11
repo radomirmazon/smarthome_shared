@@ -27,7 +27,7 @@ class Timer {
     return false;
   }
 
-  void cancle() {
+  void cancel() {
     isRunning = false;
     isAlarm_ = false;
   }
