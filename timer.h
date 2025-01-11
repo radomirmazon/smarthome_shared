@@ -4,7 +4,7 @@
 class Timer {
 
   private: 
-  bool isRunning = false;
+  bool isRunning_ = false;
   bool isAlarm_ = false;
   long time = -1;
   long timer = -1;
@@ -12,31 +12,35 @@ class Timer {
 
   public:
   void start(int timer) {
-    isRunning = true;
+    isRunning_ = true;
     isAlarm_ = false;
     time = millis();
     this->timer = timer;
   }
 
+  bool isRunning() {
+    return isRunning_;
+  }
+
   bool isAlarm() {
     if (isAlarm_) {
       isAlarm_ = false;
-      isRunning = false;
+      isRunning_ = false;
       return true;
     }
     return false;
   }
 
   void cancel() {
-    isRunning = false;
+    isRunning_ = false;
     isAlarm_ = false;
   }
 
   void loop() {
-    if (isRunning) {
+    if (isRunning_) {
       long lastLoop = millis() - time;
       if (lastLoop > timer) {
-        isRunning = false;
+        isRunning_ = false;
         isAlarm_ = true;
       } 
     }

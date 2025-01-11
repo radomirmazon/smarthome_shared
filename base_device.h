@@ -4,12 +4,12 @@
 #include "mqtt_module.h"
 
 /*
-  podlaczenie
-  1. przekazac konstruktorowi takie parametry jak channel i deviceName
-  2. zabrac o wywolanie begin() - spowoduje zarejestrowania handlerow w HA
-  3. zaimplementowac metode onState() - bedzie ona wolana za kazdym razem gdy HA opublikuje stan
-
-  4. jesli device potrafi zmieniac wewnetrzny stan - wola setState() w celu publikacji nowego stanu
+Features:
+1. pass parameters like channel and deviceName to the constructor
+2. take a call to begin() - it will register handlers in HA
+3. implement the onState() method - it will be called every time HA publishes state
+4. if the device can change its internal state - call setState() to publish a new state
+5. if HA has a configuration, then after receiving it onConfig() will be called
 */
 
 class BaseDevice {
