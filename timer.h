@@ -24,8 +24,7 @@ class Timer {
 
   bool isAlarm() {
     if (isAlarm_) {
-      isAlarm_ = false;
-      isRunning_ = false;
+      cancel();
       return true;
     }
     return false;

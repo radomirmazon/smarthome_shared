@@ -4,7 +4,8 @@
 #include "timer.h"
 #include "base_device.h"
 
-#define DEBOUNCE_TIME 60
+#define DEBOUNCE_TIME 50
+#define DEAD_ZONE_TIME 350
 
 class ChangeDetector{
   public:
@@ -15,7 +16,10 @@ class ChangeDetector{
 class SwitchButton {
 
     private:
-    Timer debounceTimner;
+    Timer debounceTimer;
+    Timer deadZoneTimer;
+
+    uint8_t clickCounter = 0;
 
     bool internalState = false;
     bool debounceState = false;
@@ -36,30 +40,66 @@ class SwitchButton {
     }
 
     void loop(){
-        debounceTimner.loop();
-        if (debounceTimner.isAlarm()) {
-            debounceTimner.cancel();
+        debounceTimer.loop();
+        deadZoneTimer.loop();
+
+        if (debounceTimer.isAlarm()) {
             if (debounceState != internalState) {
-                detectNewState();
+                detectedNewState();
             }
+        }
+
+        if (deadZoneTimer.isAlarm() && clickCounter > 0) {
+            Serial.print("Detect clicks: ");
+            Serial.println(clickCounter);
+            clickCounter = 0;
         }
     }
 
     void setState(bool state) {
         debounceState = state;
-        if (!debounceTimner.isRunning() && internalState != state) {
-            debounceTimner.start(DEBOUNCE_TIME);
+        if (!debounceTimer.isRunning() && internalState != state) {
+            debounceTimer.start(DEBOUNCE_TIME);
         }
     }
 
     private:
-    void detectNewState() {
+    void detectedNewState() {
+        bool logicalStateBefore = getLogicalState();
         internalState = debounceState;
-        if (!bell) {
-            pDevice->stateChanged(internalState ^ invertState);
-        } else {
-            
-        }    }
+        bool logicalStateAfter = getLogicalState();
+        bool isRisingEdgeLogicalState = !logicalStateBefore && logicalStateAfter;
+
+        //if (!bell) {
+        //    switchProcessing();
+        //} else {
+            bellProcessing(isRisingEdgeLogicalState);
+        //}    
+    }
+
+    void switchProcessing() {
+        pDevice->stateChanged(getLogicalState());
+    }
+
+    void bellProcessing(bool isRisingEdgeLogicalState) {
+
+        if (!deadZoneTimer.isRunning() && isRisingEdgeLogicalState) {
+            deadZoneTimer.start(DEAD_ZONE_TIME);
+        }
+
+        if (deadZoneTimer.isRunning() && isRisingEdgeLogicalState) {
+            if (clickCounter<3) {
+                clickCounter++;
+            }
+            deadZoneTimer.start(DEAD_ZONE_TIME);
+        }
+        
+    }
+
+    bool getLogicalState() {
+        return internalState ^ invertState;
+    }
+
 };
 
 #endif
