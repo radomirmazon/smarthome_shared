@@ -9,7 +9,9 @@
 
 class ChangeDetector{
   public:
-  virtual void stateChanged(bool state)=0;
+  virtual void stateBoolDetected(bool state)=0;
+  virtual void stateClickDetected(uint8_t state)=0;
+  virtual void stateNumberDetected(uint8_t state)=0;
 };
 
 
@@ -33,7 +35,7 @@ class SwitchButton {
         internalState = initState;
         this->bell = bell;
         this->invertState = invertState;
-        pDevice->stateChanged(internalState);
+        pDevice->stateBoolDetected(internalState);
     }
 
     void begin(){
@@ -50,8 +52,7 @@ class SwitchButton {
         }
 
         if (deadZoneTimer.isAlarm() && clickCounter > 0) {
-            Serial.print("Detect clicks: ");
-            Serial.println(clickCounter);
+            pDevice->stateClickDetected(clickCounter);
             clickCounter = 0;
         }
     }
@@ -78,7 +79,7 @@ class SwitchButton {
     }
 
     void switchProcessing() {
-        pDevice->stateChanged(getLogicalState());
+        pDevice->stateBoolDetected(getLogicalState());
     }
 
     void bellProcessing(bool isRisingEdgeLogicalState) {
