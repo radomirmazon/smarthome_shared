@@ -5,13 +5,13 @@
 #include "base_device.h"
 
 #define DEBOUNCE_TIME 50
-#define DEAD_ZONE_TIME 350
+#define DEAD_ZONE_TIME 300
+#define MAX_CLICK_DETECTION 3
 
 class ChangeDetector{
   public:
   virtual void stateBoolDetected(bool state)=0;
   virtual void stateClickDetected(uint8_t state)=0;
-  virtual void stateNumberDetected(uint8_t state)=0;
 };
 
 
@@ -25,20 +25,18 @@ class SwitchButton {
 
     bool internalState = false;
     bool debounceState = false;
-    bool bell = false;
     bool invertState = false;
     ChangeDetector* pDevice;
 
     public:
-    SwitchButton(ChangeDetector* pDevice, bool initState, bool invertState, bool bell) {
+    SwitchButton(ChangeDetector* pDevice, bool initState, bool invertState) {
         this->pDevice = pDevice;
         internalState = initState;
-        this->bell = bell;
         this->invertState = invertState;
-        pDevice->stateBoolDetected(internalState);
     }
 
     void begin(){
+        pDevice->stateBoolDetected(internalState);
     }
 
     void loop(){
@@ -71,11 +69,8 @@ class SwitchButton {
         bool logicalStateAfter = getLogicalState();
         bool isRisingEdgeLogicalState = !logicalStateBefore && logicalStateAfter;
 
-        //if (!bell) {
-        //    switchProcessing();
-        //} else {
-            bellProcessing(isRisingEdgeLogicalState);
-        //}    
+        switchProcessing();
+        bellProcessing(isRisingEdgeLogicalState);  
     }
 
     void switchProcessing() {
@@ -89,7 +84,7 @@ class SwitchButton {
         }
 
         if (deadZoneTimer.isRunning() && isRisingEdgeLogicalState) {
-            if (clickCounter<3) {
+            if (clickCounter < MAX_CLICK_DETECTION) {
                 clickCounter++;
             }
             deadZoneTimer.start(DEAD_ZONE_TIME);

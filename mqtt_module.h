@@ -73,6 +73,7 @@ class MqttModule {
     }
 
     PubSubClient* getClient() {
+      reconnect();
       logger->setBlinkOnce();
       return pMqttClient;
     }
@@ -94,10 +95,10 @@ class MqttModule {
           // Wait 5 seconds before retrying
           delay(5000);
         }
-      }
-      if (pMqttClient->connected()) {
-        // Subscribe
-        executeSubscribers();
+        if (pMqttClient->connected()) {
+          // Subscribe
+          executeSubscribers();
+        }
       }
     }
 

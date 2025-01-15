@@ -17,15 +17,17 @@ class BaseDevice {
   private:
     MqttModule* pMqtt;
     const char* deviceName;
+    const char* deviceName2;
     const char* topicTemplate;
     bool commandEnabled = false;
     bool configEnabled = false;
     String channel;
 
   public: 
-  BaseDevice(MqttModule* pMqtt, const char* channel, const char* deviceName, const char* topicTemplate, 
+  BaseDevice(MqttModule* pMqtt, const char* channel, const char* deviceName, const char* deviceName2, const char* topicTemplate, 
              bool commandEnabled,  bool configEnabled) {
     this->deviceName = deviceName;
+    this->deviceName2 = deviceName2;
     this->topicTemplate = topicTemplate;
     this->channel = String(channel);
     this->pMqtt = pMqtt;
@@ -75,25 +77,24 @@ class BaseDevice {
   virtual bool onState(String state)=0;
   virtual void onConfig(String state)=0;
 
-  void configRequest() {
-    char buff[50];
-    sprintf(buff, topicTemplate, "getConfig", deviceName, channel.c_str());
-    Serial.print("Config request: ");
-    Serial.println(buff);
-    pMqtt->getClient()->publish(buff, "", true);  
+  protected:
+  void setState(String state) {
+    sendState(state, deviceName);
   }
 
-  protected:
-  void setState(String state/*, MqttModule* pMqtt*/) {
+  void setState2(String state) {
+    sendState(state, deviceName2);
+  }
+
+  void sendState(String state, const char* devName) {
     char buff[50];
-    sprintf(buff, topicTemplate, "state", deviceName, channel.c_str());
+    sprintf(buff, topicTemplate, "state", devName, channel.c_str());
 
     Serial.print("Sending state: ");
     Serial.print(state);
     Serial.print(" to ");
     Serial.println(buff);
-    pMqtt->getClient()->publish(buff, state.c_str(), true);  
-    
+    pMqtt->getClient()->publish(buff, state.c_str(), true);
   }
 
   private:
