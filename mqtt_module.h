@@ -7,7 +7,7 @@
 #include <ESP8266WiFi.h>
 #include "logger.h"
 
-#define MAX_CALLBACKS 50
+#define MAX_CALLBACKS 64
 
 class MqttModule {
   private:
